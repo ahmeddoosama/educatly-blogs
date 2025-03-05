@@ -51,8 +51,8 @@ module.exports = {
         mistBlue: "#667085",
         davyGrey: '#54585C',
         ebonyClay: '#101828',
-        santaGray: '#99a5af',
-        romance: "#F9F5FF"
+        santaGray: '#D0D5DD',
+        romance: "#F9F5FF",
       },
 
       boxShadow: {
