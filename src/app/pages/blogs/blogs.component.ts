@@ -3,7 +3,7 @@ import { NotificationService } from '@core/services/app-services/notification/no
 import { BlogCardComponent } from './components/blog-card/blog-card.component';
 import { BlogsService } from '@core/services/app-services/blogs/blogs.service';
 import { IBlog } from '@core/interfaces/blog.interface';
-import { finalize, Subject, throttleTime, takeUntil } from 'rxjs';
+import { finalize, Subject, throttleTime, takeUntil, catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-blogs',
@@ -14,83 +14,123 @@ import { finalize, Subject, throttleTime, takeUntil } from 'rxjs';
 })
 export class BlogsComponent implements OnInit, OnDestroy {
 
-  blogs: IBlog[] = [];
-  isLoading: boolean = false;
-  isEmpty: boolean = false;
-  skeletons: number[] = Array.from({ length: 12 }, (_, i) => i + 1);
-  isLoadingMore = false;
+  blogPosts: IBlog[] = [];
+  private currentPage = 1;
+  private readonly postsPerPage = 12;
+  private readonly destroy$ = new Subject<void>();
+  private readonly scrollEvent$ = new Subject<void>();
 
-  private page = 1;
-  private pageSize = 12;
-  private destroy$ = new Subject<void>();
-  private scroll$ = new Subject<void>();
+  // Scroll configuration
+  private readonly SCROLL_THRESHOLD_PX = 100;
+  private readonly SCROLL_THROTTLE_MS = 500;
+  private readonly INITIAL_PAGE = 1;
+
+  // UI state
+  isLoadingInitial: boolean = false;
+  isLoadingMore: boolean = false;
+  hasNoContent: boolean = false;
+  errorMessage: string | null = null;
+  readonly skeletonCount: number[] = Array.from({ length: 12 }, (_, i) => i + 1);
 
   constructor(
     private notificationService: NotificationService,
     private blogsService: BlogsService
   ) {
-    // Setup throttled scroll handler
-    this.scroll$
+    this.initializeScrollHandler();
+  }
+
+  /**
+   * Initializes the component by loading the first batch of blogs
+   */
+  ngOnInit(): void {
+    this.loadBlogPosts();
+  }
+
+  /**
+   * Handles window scroll events to trigger infinite scrolling
+   */
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.scrollEvent$.next();
+  }
+
+  /**
+   * Sets up the infinite scroll handler with throttling to prevent excessive API calls
+   */
+  private initializeScrollHandler(): void {
+    this.scrollEvent$
       .pipe(
-        throttleTime(500), // Throttle to once every 500ms
+        throttleTime(this.SCROLL_THROTTLE_MS),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        this.loadMoreIfNeeded();
+        this.checkAndLoadMorePosts();
       });
   }
 
-  ngOnInit(): void {
-    this.loadBlogs();
-  }
+  /**
+   * Checks scroll position and loads more posts if user is near bottom of page
+   */
+  private checkAndLoadMorePosts(): void {
+    if (this.isLoadingMore || this.hasNoContent) return;
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+    const scrollPosition = window.scrollY + window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    this.scroll$.next();
-  }
-
-  private loadMoreIfNeeded(): void {
-    if (this.isLoadingMore) return;
-
-    const threshold = 100; // pixels from bottom
-    const position = window.scrollY + window.innerHeight;
-    const height = document.documentElement.scrollHeight;
-
-    if (position > height - threshold) {
-      this.loadBlogs();
+    if (scrollPosition > documentHeight - this.SCROLL_THRESHOLD_PX) {
+      this.loadBlogPosts();
     }
   }
 
-  private loadBlogs(): void {
+  /**
+   * Loads blog posts from the API with pagination
+   * Handles loading states and error scenarios
+   */
+  private loadBlogPosts(): void {
     if (this.isLoadingMore) return;
 
     this.isLoadingMore = true;
-    this.isLoading = this.page === 1;
+    this.isLoadingInitial = this.currentPage === this.INITIAL_PAGE;
+    this.errorMessage = null;
 
-    this.blogsService.getBlogs(this.page, this.pageSize)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (newBlogs) => {
-          if (newBlogs.length === 0) {
-            this.isEmpty = this.blogs.length === 0;
-          } else {
-            this.blogs = [...this.blogs, ...newBlogs];
-            this.page++;
-          }
-          this.isLoading = false;
+    this.blogsService.getBlogs(this.currentPage, this.postsPerPage)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(error => {
+          this.errorMessage = error?.message || 'Failed to load blog posts';
+          return of([]);
+        }),
+        finalize(() => {
+          this.isLoadingInitial = false;
           this.isLoadingMore = false;
-        },
-        error: (error) => {
-          console.error('Error loading blogs:', error);
-          this.notificationService.error(error);
-          this.isLoading = false;
-          this.isLoadingMore = false;
+        })
+      )
+      .subscribe(newPosts => {
+        if (newPosts.length === 0) {
+          this.hasNoContent = this.blogPosts.length === 0;
+        } else {
+          this.blogPosts = [...this.blogPosts, ...newPosts];
+          this.currentPage++;
         }
       });
+  }
+
+  /**
+   * Resets the blog list to its initial state and reloads posts
+   */
+  public resetBlogList(): void {
+    this.blogPosts = [];
+    this.currentPage = this.INITIAL_PAGE;
+    this.hasNoContent = false;
+    this.errorMessage = null;
+    this.loadBlogPosts();
+  }
+
+  /**
+   * Cleanup subscriptions when component is destroyed
+   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

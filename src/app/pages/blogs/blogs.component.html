@@ -20,17 +20,17 @@
   <div class="relative w-full">
     <div
       class="min-h-96 absolute inset-0 bg-[url('/assets/images/patterns/background-pattern.png')] bg-no-repeat bg-cover opacity-10 pb-16"
-      [class.empty-blog]="isEmpty">
+      [class.empty-blog]="hasNoContent">
       <div class="container">
         <div class="grid grid-cols-12 md:gap-8">
-          @if (isLoading) {
-          @for (skeleton of skeletons; track skeleton) {
+          @if (isLoadingInitial) {
+          @for (skeleton of skeletonCount; track skeleton) {
           <div class="col-span-12 md:col-span-6 lg:col-span-4 mb-8 md:mb-0">
             <div class="w-full h-[500px] bg-slate-700 rounded-lg animate-pulse"></div>
           </div>
           }
-          } @else if (!isLoading) {
-          @for (blog of blogs; track blog.id) {
+          } @else if (!isLoadingInitial) {
+          @for (blog of blogPosts; track blog.id) {
           <div class="col-span-12 md:col-span-6 lg:col-span-4 mb-8 md:mb-0">
             <blog-card [blog]="blog"></blog-card>
           </div>
