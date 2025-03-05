@@ -22,7 +22,7 @@ export class NotificationService {
    * @param type - The type of notification ('success', 'error', 'warning', 'info')
    * @param duration - Time in milliseconds before the notification auto-dismisses. Set to 0 for persistent notification
    */
-  show(message: string, type: NotificationType, duration: number = 5000): void {
+  show(message: string, type: NotificationType, duration: number = 3000): void {
     const id = Date.now().toString();
     const notification: INotification = {
       id,

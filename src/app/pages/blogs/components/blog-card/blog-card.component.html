@@ -1,22 +1,30 @@
-<div class="w-full h-[550px] relative shadow-lg bg-white p-6 flex flex-col items-center">
-  <img src="assets/images/Image.png" alt="image" class="max-h-[240px] w-full mb-8">
-  <div class="flex flex-col gap-3">
-    <div class="text-primary text-sm font-medium">
-      Design
+<div class="cursor-pointer w-full h-[500px] relative shadow-lg bg-white p-6 flex flex-col transition-transform duration-300 hover:-translate-y-2" (click)="navigateToBlogLink(blog.url)">
+  <img [src]="(blog.cover_image) ? blog.cover_image : 'assets/images/general/placeholder.jpeg'" alt="image" class="max-h-[240px] w-full mb-8 object-cover">
+  <div class="flex flex-col gap-3 flex-grow">
+    @if (blog.tag_list.length > 0) {
+      <div class="flex flex-wrap gap-2">
+        @for (tag of blog.tag_list; track tag) {
+          <div class="text-primary text-sm font-medium">
+            {{ tag }}
+          </div>
+        }
+      </div>
+    }
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="text-ebonyClay text-2xl font-medium line-clamp-2 flex-grow">{{ blog.title }}</h3>
+      <img src="assets/images/icons/arrow-right.svg" alt="arrow-right" class="flex-shrink-0 mt-1">
     </div>
-    <div class="flex items-center justify-between">
-      <h3 class="text-ebonyClay text-2xl font-medium">UX review presentations</h3>
-      <img src="assets/images/icons/arrow-right.svg" alt="arrow-right">
-    </div>
-    <div class="text-mistBlue leading-6 line-clamp-3">How do you create compelling presentations that wow your colleagues and impress your managers? How do you create compelling presentations that wow your colleagues and impress your managers?</div>
+    <div class="text-mistBlue leading-6 line-clamp-3">{{ blog.description }}</div>
   </div>
 
   <div class="absolute bottom-6 left-6 flex items-center justify-center gap-3 w-fit">
-    <div class="w-10 h-10 rounded-full bg-lavenderMist"></div>
+    <div class="w-10 h-10 rounded-full bg-lavenderMist overflow-hidden">
+      <img [src]="blog.user.profile_image" [alt]="blog.user.name" class="w-full h-full object-cover">
+    </div>
     <div class="flex flex-col gap-1">
-      <h4 class="text-ebonyClay text-sm font-medium">John Doe</h4>
+      <h4 class="text-ebonyClay text-sm font-medium">{{ blog.user.name }}</h4>
       <div class="text-mistBlue text-sm">
-        20 Jan 2022
+        {{ blog.created_at | date: 'MMM d, yyyy' }}
       </div>
     </div>
   </div>

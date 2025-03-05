@@ -1,34 +1,47 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NotificationService } from '@core/services/app-services/notification/notification.service';
 import { BlogCardComponent } from './components/blog-card/blog-card.component';
-
-const COMPONENTS = [
-  BlogCardComponent
-]
+import { BlogsService } from '@core/services/app-services/blogs/blogs.service';
+import { IBlog } from '@core/interfaces/blog.interface';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-blogs',
   standalone: true,
-  imports: [...COMPONENTS],
+  imports: [BlogCardComponent],
   templateUrl: './blogs.component.html',
   styleUrl: './blogs.component.css'
 })
-export class BlogsComponent {
-  constructor(private notificationService: NotificationService) {}
+export class BlogsComponent implements OnInit {
 
-  testNotification() {
-    this.notificationService.success('Hello World!');
+  blogs: IBlog[] = [];
+  isLoading: boolean = false;
+  isEmpty: boolean = true;
+  skeletons: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+
+  constructor(
+    private notificationService: NotificationService,
+    private blogsService: BlogsService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadBlogs();
   }
 
-  testErrorNotification() {
-    this.notificationService.error('Hello World!');
-  }
+  private loadBlogs(): void {
+    this.isLoading = true;
 
-  testWarningNotification() {
-    this.notificationService.warning('Hello World!');
-  }
-
-  testInfoNotification() {
-    this.notificationService.info('Hello World!');
+    this.blogsService.getBlogs().pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: (blogs) => {
+        this.blogs = blogs;
+        this.isEmpty = blogs.length === 0;
+      },
+      error: (error) => {
+        console.error('Error loading blogs:', error);
+        this.notificationService.error(error);
+      }
+    });
   }
 }

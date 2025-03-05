@@ -1,14 +1,39 @@
 <section>
   <header class="min-h-96 p-6 bg-romance flex flex-col items-center justify-center">
     <div class="py-1 px-3 rounded-full bg-primary bg-opacity-10-pct text-primary text-sm">Our blog</div>
-    <h1 class="text-secondary text-4xl font-medium mt-4 mb-6">Resources and insights</h1>
+    <h1 class="text-center text-secondary text-4xl font-medium mt-4 mb-6">Resources and insights</h1>
     <p class="text-primary text-center text-lg">
       The latest industry news, interviews, technologies, and resources.
     </p>
   </header>
   <div class="relative w-full">
-    <div class="min-h-96 absolute inset-0 bg-[url('/assets/images/patterns/background-pattern.png')] bg-no-repeat bg-cover opacity-10">
-      <blog-card />
+    <div
+      class="min-h-96 absolute inset-0 bg-[url('/assets/images/patterns/background-pattern.png')] bg-no-repeat bg-cover opacity-10 pb-9"
+      [class.empty-blog]="isEmpty">
+      <div class="container">
+        <div class="grid grid-cols-12 md:gap-8">
+          @if (isLoading) {
+            @for (skeleton of skeletons; track skeleton) {
+              <div class="col-span-12 md:col-span-6 lg:col-span-4 mb-8 md:mb-0">
+                <div class="w-full h-[500px] bg-slate-700 rounded-lg animate-pulse"></div>
+              </div>
+            }
+          } @else if (!isLoading) {
+            @for (blog of blogs; track blog.id) {
+              <div class="col-span-12 md:col-span-6 lg:col-span-4 mb-8 md:mb-0">
+                <blog-card [blog]="blog"></blog-card>
+              </div>
+            } @empty {
+              <div class="col-span-12">
+                <div class="flex flex-col items-center justify-center h-full">
+                  <img src="assets/images/general/undraw_taken_mshk.svg" alt="empty-data" class="max-h-[500px]">
+                  <div class="mt-6 text-primary text-2xl font-medium">No blogs found</div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
     </div>
   </div>
 </section>

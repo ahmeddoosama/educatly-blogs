@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { NotificationService } from '@core/services/app-services/notification/notification.service';
 import { catchError, Observable, throwError } from 'rxjs';
-import { StorageService } from '@core/services/app-services/storage/storage.service';
 
 /**
  * Intercepts HTTP errors and handles them appropriately based on their type and status.
@@ -18,7 +17,6 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
 ): Observable<HttpEvent<unknown>> => {
   const notification = inject(NotificationService);
   const router = inject(Router);
-  const storageService = inject(StorageService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -93,7 +91,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
    * @returns An Observable that errors with the original error
    */
   function showError(error: HttpErrorResponse, errorMessage: string) {
-    // notification.error(errorMessage);
+    notification.error(errorMessage);
     return throwError(() => error);
   }
 
@@ -103,10 +101,8 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
    */
   function handleUnauthorized() {
     if (!router.url.includes('login')) {
-      // storageService.logout();
       setTimeout(() => {
-        router.navigateByUrl('/auth/login');
-        // notification.error('Your session has expired. Please log in again.');
+        notification.error('Your session has expired. Please log in again.');
       }, 100);
     }
   }

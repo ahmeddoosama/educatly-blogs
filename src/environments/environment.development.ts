@@ -1,4 +1,4 @@
 export const environment = {
-  baseUrl: 'https://dev.to/api/articles',
+  baseUrl: 'https://dev.to/',
   production: false
 };
