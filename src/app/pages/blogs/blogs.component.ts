@@ -1,10 +1,15 @@
 import { Component } from '@angular/core';
 import { NotificationService } from '@core/services/app-services/notification/notification.service';
+import { BlogCardComponent } from './components/blog-card/blog-card.component';
+
+const COMPONENTS = [
+  BlogCardComponent
+]
 
 @Component({
   selector: 'app-blogs',
   standalone: true,
-  imports: [],
+  imports: [...COMPONENTS],
   templateUrl: './blogs.component.html',
   styleUrl: './blogs.component.css'
 })
