@@ -19,7 +19,11 @@ export class BlogsService {
    * @param
    * @returns Observable of blog array
    */
-  getBlogs(): Observable<IBlog[]> {
-    return this.coreRequest.get(Blog.BaseUrl);
+  getBlogs(page: number, pageSize: number): Observable<IBlog[]> {
+    const data: { page: number, per_page: number } = {
+      page: page ?? 1,
+      per_page: pageSize ?? 12
+    };
+    return this.coreRequest.get(Blog.BaseUrl, data);
   }
 }
