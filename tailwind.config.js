@@ -51,11 +51,12 @@ module.exports = {
         mistBlue: "#667085",
         davyGrey: '#54585C',
         ebonyClay: '#101828',
-        santaGray: '#99a5af'
+        santaGray: '#D0D5DD',
+        romance: "#F9F5FF",
       },
 
       boxShadow: {
-        'lg': '0px 12px 16px -4px #10182814'
+        'lg': '0px 4px 6px -2px #10182808, 0px 12px 16px -4px #10182814'
       },
     },
   },

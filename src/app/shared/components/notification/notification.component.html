@@ -1,0 +1,14 @@
+<div [class]="getBackgroundColor(notification.type)"
+  class="rounded-lg p-4 mb-4 border-l-4 flex items-center justify-between shadow-md">
+  <div class="flex items-center">
+    <div [class]="getTextColor(notification.type)" class="font-bold mr-2">
+      {{ getIcon(notification.type) }}
+    </div>
+    <div [class]="getTextColor(notification.type)">
+      {{ notification.message }}
+    </div>
+  </div>
+  <button (click)="onClose()" [class]="getTextColor(notification.type)" class="ml-4 hover:opacity-75">
+    ✕
+  </button>
+</div>
